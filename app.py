@@ -4,7 +4,6 @@ import plotly.express as px
 import dash
 from dash import dcc, html
 import os
-import sys
 
 # Configuración del logging (manteniendo lo esencial)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -69,13 +68,9 @@ try:
     ])
 
     if __name__ == '__main__':
-        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False)
+        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False) # Configuración para Heroku.
 
 except pd.errors.ParserError as e:
     logger.error('Error al leer el archivo CSV: %s', e)
-    sys.exit(1)
 except Exception as e:
     logger.error('Error inesperado: %s', e)
-    sys.exit(1)
-
-
