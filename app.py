@@ -96,7 +96,7 @@ try:
 
     if __name__ == '__main__':
         logger.info("Iniciando el servidor...")
-        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False)
+        app.run_server(host='localhost', port=int(os.environ.get("PORT", 80)), debug=False)
         logger.info("Servidor iniciado.")
 
 except pd.errors.ParserError as e:
