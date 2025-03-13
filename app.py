@@ -5,12 +5,8 @@ import dash
 from dash import dcc, html
 import os
 import sys
-from dotenv import load_dotenv
 
-# Cargar las variables de entorno
-load_dotenv()
-
-# Configuración del logging
+# Configuración del logging (manteniendo lo esencial)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -18,14 +14,9 @@ logger = logging.getLogger(__name__)
 url = os.environ.get('CSV_URL', 'https://raw.githubusercontent.com/licvincent/Hipertension_Arterial_Mexico/refs/heads/main/Hipertension_Arterial_Mexico_v3.csv')
 
 try:
-    logger.info('Iniciando carga de datos desde la URL: %s', url)
+    logger.info('Iniciando carga de datos desde la URL')
     df = pd.read_csv(url)
     logger.info('Datos cargados correctamente')
-    logger.debug('Primeras filas del DataFrame: %s', df.head())
-    logger.debug('Estadísticas del DataFrame: %s', df.describe())
-
-    # Validar valores únicos en la columna 'sexo'
-    logger.info('Valores únicos en la columna "sexo": %s', df['sexo'].unique())
 
     # Creación de Grupos de Edad
     def categorize_age(edad):
@@ -40,7 +31,7 @@ try:
 
     df['Grupo_Edad'] = df['edad'].apply(categorize_age)
 
-    # Agrupar por 'sexo' y 'Grupo_Edad' y calcular la media de hipertensión
+    # Agrupar por 'Sexo' y 'Grupo_Edad' y calcular la media de hipertensión
     grouped = df.groupby(['sexo', 'Grupo_Edad'])['riesgo_hipertension'].mean().reset_index()
 
     # Convertir la proporción a porcentaje
@@ -53,14 +44,14 @@ try:
     # Crear la visualización
     color_map = {'Hombre': 'blue', 'Mujer': 'pink'}
     fig = px.bar(grouped,
-                 x='Grupo_Edad',
-                 y='Riesgo (%)',
-                 color='sexo',
-                 barmode='group',
-                 title='Riesgo de Hipertensión por Sexo y Grupo de Edad',
-                 labels={'Grupo_Edad': 'Grupo de Edad', 'Riesgo (%)': 'Porcentaje de Hipertensión'},
-                 color_discrete_map=color_map
-                 )
+                x='Grupo_Edad',
+                y='Riesgo (%)',
+                color='sexo',
+                barmode='group',
+                title='Riesgo de Hipertensión por Sexo y Grupo de Edad',
+                labels={'Grupo_Edad': 'Grupo de Edad', 'Riesgo (%)': 'Porcentaje de Hipertensión'},
+                color_discrete_map=color_map
+                )
 
     # Crear la app de Dash
     app = dash.Dash(__name__)
