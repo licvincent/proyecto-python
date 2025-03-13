@@ -11,15 +11,6 @@ import sys
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Instalar dependencias explicitamente
-try:
-    import pandas, plotly, dash
-    logger.info("Librerías pandas, plotly y dash ya están instaladas.")
-except ImportError:
-    logger.info("Instalando librerías pandas, plotly y dash...")
-    !pip install pandas plotly dash
-    logger.info("Librerías instaladas.")
-
 # URL del archivo CSV desde una variable de entorno
 url = os.environ.get('CSV_URL', 'https://raw.githubusercontent.com/licvincent/Hipertension_Arterial_Mexico/refs/heads/main/Hipertension_Arterial_Mexico_v3.csv')
 
@@ -88,16 +79,9 @@ try:
     ])
 
     if __name__ == '__main__':
-        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False) # Configuración para Heroku.
+        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False)
 
 except pd.errors.ParserError as e:
     logger.error('Error al leer el archivo CSV: %s', e)
 except Exception as e:
     logger.error('Error inesperado: %s', e)
-
-# Generar requirements.txt
-!pip freeze > requirements.txt
-logger.info("Archivo requirements.txt generado.")
-
-#Simular ejecución de heroku.
-!gunicorn app:server
