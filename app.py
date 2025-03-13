@@ -10,8 +10,8 @@ import sys
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# URL del archivo CSV
-url = 'https://raw.githubusercontent.com/licvincent/Hipertension_Arterial_Mexico/refs/heads/main/Hipertension_Arterial_Mexico_v3.csv'
+# URL del archivo CSV desde una variable de entorno, con un valor por defecto
+url = os.environ.get('CSV_URL', 'https://raw.githubusercontent.com/licvincent/Hipertension_Arterial_Mexico/refs/heads/main/Hipertension_Arterial_Mexico_v3.csv')
 
 try:
     logger.info('Iniciando carga de datos desde la URL: %s', url)
@@ -47,6 +47,7 @@ try:
     grouped['sexo'] = grouped['sexo'].map(sexo_labels)
 
     # Crear la visualización
+    color_map = {'Hombre': 'blue', 'Mujer': 'pink'}
     fig = px.bar(grouped,
                  x='Grupo_Edad',
                  y='Riesgo (%)',
@@ -54,10 +55,7 @@ try:
                  barmode='group',
                  title='Riesgo de Hipertensión por Sexo y Grupo de Edad',
                  labels={'Grupo_Edad': 'Grupo de Edad', 'Riesgo (%)': 'Porcentaje de Hipertensión'},
-                 color_discrete_map={
-                     'Hombre': 'blue',
-                     'Mujer': 'pink'
-                 }
+                 color_discrete_map=color_map
                  )
 
     # Crear la app de Dash
@@ -76,9 +74,12 @@ try:
     ])
 
     if __name__ == '__main__':
-        port = int(os.environ.get("PORT", 5000))
-        app.run_server(host='0.0.0.0', port=port, debug=False)
+        app.run_server(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False)
 
+except pd.errors.ParserError as e:
+    logger.error('Error al leer el archivo CSV: %s', e)
+    sys.exit(1)
 except Exception as e:
     logger.error('Error inesperado: %s', e)
     sys.exit(1)
+
