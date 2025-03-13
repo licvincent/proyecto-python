@@ -5,6 +5,10 @@ import dash
 from dash import dcc, html
 import os
 import sys
+from dotenv import load_dotenv
+
+# Cargar las variables de entorno
+load_dotenv()
 
 # Configuración del logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -36,7 +40,7 @@ try:
 
     df['Grupo_Edad'] = df['edad'].apply(categorize_age)
 
-    # Agrupar por 'Sexo' y 'Grupo_Edad' y calcular la media de hipertensión
+    # Agrupar por 'sexo' y 'Grupo_Edad' y calcular la media de hipertensión
     grouped = df.groupby(['sexo', 'Grupo_Edad'])['riesgo_hipertension'].mean().reset_index()
 
     # Convertir la proporción a porcentaje
@@ -82,4 +86,5 @@ except pd.errors.ParserError as e:
 except Exception as e:
     logger.error('Error inesperado: %s', e)
     sys.exit(1)
+
 
