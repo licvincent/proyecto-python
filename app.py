@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import dash
 from dash import dcc, html
+from dash.dependencies import Input, Output
 import os
 import requests
 import sys
@@ -30,7 +31,7 @@ try:
     logger.info('Iniciando carga de datos desde la URL')
     df = pd.read_csv(url, encoding='utf-8')  # Asegurar encoding utf-8
     logger.info('Datos cargados correctamente')
-    logger.info(f"Forma del DataFrame: {df.shape}") #Agregar forma del dataframe
+    logger.info(f"Forma del DataFrame: {df.shape}")  # Agregar forma del dataframe
 
     # Creación de Grupos de Edad
     def categorize_age(edad):
@@ -47,35 +48,11 @@ try:
     df['Grupo_Edad'] = df['edad'].apply(categorize_age)
     logger.info("Edades categorizadas.")
 
-    # Agrupar por 'Sexo' y 'Grupo_Edad' y calcular la media de hipertensión
-    logger.info("Agrupando datos...")
-    grouped = df.groupby(['sexo', 'Grupo_Edad'])['riesgo_hipertension'].mean().reset_index()
-    logger.info("Datos agrupados.")
-
-    # Convertir la proporción a porcentaje
-    logger.info("Calculando riesgo en porcentaje...")
-    grouped['Riesgo (%)'] = grouped['riesgo_hipertension'] * 100
-    logger.info("Riesgo en porcentaje calculado.")
-
     # Mapear valores de sexo a etiquetas
     sexo_labels = {1: 'Hombre', 2: 'Mujer'}
     logger.info("Mapeando etiquetas de sexo...")
-    grouped['sexo'] = grouped['sexo'].map(sexo_labels)
+    df['sexo'] = df['sexo'].map(sexo_labels)
     logger.info("Etiquetas de sexo mapeadas.")
-
-    # Crear la visualización
-    logger.info("Creando la visualización...")
-    color_map = {'Hombre': 'blue', 'Mujer': 'pink'}
-    fig = px.bar(grouped,
-                x='Grupo_Edad',
-                y='Riesgo (%)',
-                color='sexo',
-                barmode='group',
-                title='Riesgo de Hipertensión por Sexo y Grupo de Edad',
-                labels={'Grupo_Edad': 'Grupo de Edad', 'Riesgo (%)': 'Porcentaje de Hipertensión'},
-                color_discrete_map=color_map
-                )
-    logger.info("Visualización creada.")
 
     # Crear la app de Dash
     logger.info("Creando la app de Dash...")
@@ -89,10 +66,38 @@ try:
             html.P("Comparación del riesgo de hipertensión entre hombres y mujeres agrupados por edades.", style={'textAlign': 'center'})
         ], style={'padding': '20px', 'backgroundColor': '#e9ecef', 'marginBottom': '20px'}),
         html.Div([
-            dcc.Graph(id='graph', figure=fig)
+            dcc.Dropdown(
+                id='grupo-edad-dropdown',
+                options=[{'label': i, 'value': i} for i in df['Grupo_Edad'].unique()],
+                value=df['Grupo_Edad'].unique(),  # Mostrar todos los grupos por defecto
+                multi=True
+            ),
+            dcc.Graph(id='graph')
         ])
     ])
     logger.info("App de Dash creada.")
+
+    # Callback para actualizar el gráfico
+    @app.callback(
+        Output('graph', 'figure'),
+        Input('grupo-edad-dropdown', 'value')
+    )
+    def update_graph(selected_grupos):
+        logger.info(f"Actualizando gráfico con grupos seleccionados: {selected_grupos}")
+        filtered_df = df[df['Grupo_Edad'].isin(selected_grupos)]
+        grouped = filtered_df.groupby(['sexo', 'Grupo_Edad'])['riesgo_hipertension'].mean().reset_index()
+        grouped['Riesgo (%)'] = grouped['riesgo_hipertension'] * 100
+        color_map = {'Hombre': 'blue', 'Mujer': 'pink'}
+        fig = px.bar(grouped,
+                       x='Grupo_Edad',
+                       y='Riesgo (%)',
+                       color='sexo',
+                       barmode='group',
+                       title='Riesgo de Hipertensión por Sexo y Grupo de Edad',
+                       labels={'Grupo_Edad': 'Grupo de Edad', 'Riesgo (%)': 'Porcentaje de Hipertensión'},
+                       color_discrete_map=color_map)
+        logger.info("Gráfico actualizado.")
+        return fig
 
     if __name__ == '__main__':
         logger.info("Iniciando el servidor...")
