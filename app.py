@@ -62,6 +62,7 @@ try:
 
     # Crear la app de Dash
     app = dash.Dash(__name__)
+    app.title = "Dashboard de Hipertensión"
     server = app.server  # Necesario para Heroku
 
     app.layout = html.Div(style={'backgroundColor': '#F9F9F9', 'padding': '20px'}, children=[
@@ -76,7 +77,7 @@ try:
 
     if __name__ == '__main__':
         port = int(os.environ.get("PORT", 5000))
-        app.run_server(host='0.0.0.0', port=port, debug=True)
+        app.run_server(host='0.0.0.0', port=port, debug=False)
 
 except Exception as e:
     logger.error('Error inesperado: %s', e)
