@@ -7,7 +7,7 @@ import os
 import sys
 
 # Configuración del logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # URL del archivo CSV
@@ -62,7 +62,7 @@ try:
 
     # Crear la app de Dash
     app = dash.Dash(__name__)
-    server = app.server  # Necesario para Cloud Run
+    server = app.server  # Necesario para Heroku
 
     app.layout = html.Div(style={'backgroundColor': '#F9F9F9', 'padding': '20px'}, children=[
         html.Div([
@@ -75,7 +75,8 @@ try:
     ])
 
     if __name__ == '__main__':
-        app.run_server(debug=True)
+        port = int(os.environ.get("PORT", 5000))
+        app.run_server(host='0.0.0.0', port=port, debug=True)
 
 except Exception as e:
     logger.error('Error inesperado: %s', e)
